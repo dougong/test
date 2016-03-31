@@ -36,13 +36,37 @@ int main(int argc, char **argv)
     struct sockaddr_in clientAddr;
     int n;
     int len = sizeof(clientAddr);
+
+    int i = 0;
+    pid_t pid;
+
+    printf("master proess:%d\n",getpid());
+
+    for (i = 0; i < 3; i++)
+    {
+        pid = fork();
+        if (pid < 0)
+        {
+            printf("error!\n");
+        }
+	else if(pid == 0)
+        {
+            continue;
+        }
+	else
+	{
+	    printf("child pid:%d\n",pid);
+            break;
+	}
+    }
+
     while (1)
     {
         n = recvfrom(sock, buff, 511, 0, (struct sockaddr*)&clientAddr, &len);
+	printf("cur proess:%d\n",getpid());
         if (n>0)
         {
             buff[n] = 0;
-            printf("%s %u says: %s\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buff);
             n = sendto(sock, buff, n, 0, (struct sockaddr *)&clientAddr, sizeof(clientAddr));
             if (n < 0)
             {
