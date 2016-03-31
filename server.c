@@ -6,6 +6,22 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
+
+int count = 0;
+
+void timer(int sig)  
+{  
+        if(SIGALRM == sig)  
+        {  
+                printf("count:%d\n",count);
+		count = 0;  
+                alarm(1);       //we contimue set the timer  
+        }  
+  
+        return;  
+}  
+
 
 int main(int argc, char **argv)
 {
@@ -14,6 +30,11 @@ int main(int argc, char **argv)
         printf("Usage: %s port\n", argv[0]);
         exit(1);
     }
+
+    signal(SIGALRM, timer); //relate the signal and function  
+  
+    alarm(1);       //trigger the timer  
+  
     printf("Welcome! This is a UDP server, I can only received message from client and reply with same message\n");
     
     struct sockaddr_in addr;
@@ -63,16 +84,17 @@ int main(int argc, char **argv)
     while (1)
     {
         n = recvfrom(sock, buff, 511, 0, (struct sockaddr*)&clientAddr, &len);
-	printf("cur proess:%d\n",getpid());
+	//printf("cur proess:%d,count:%d\n",getpid(),count);
         if (n>0)
         {
+	    count++;
             buff[n] = 0;
-            n = sendto(sock, buff, n, 0, (struct sockaddr *)&clientAddr, sizeof(clientAddr));
-            if (n < 0)
-            {
-                perror("sendto");
-                break;
-            }
+            //n = sendto(sock, buff, n, 0, (struct sockaddr *)&clientAddr, sizeof(clientAddr));
+           // if (n < 0)
+           // {
+           //     perror("sendto");
+           //     break;
+           // }
         }
         else
         {
